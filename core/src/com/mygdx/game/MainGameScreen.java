@@ -1,5 +1,6 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -63,10 +64,8 @@ public class MainGameScreen extends GameScreen {
 
     private SpriteBatch spriteBatch;
     private Texture background;
-    private Texture spongeTexture;
-    private Array<Texture> planktonTextures;
-    private Rectangle sponge;
-    private Array<Rectangle> planktons;
+    private GameEntity sponge;
+    private Array<GameEntity> planktons;
     private Label scoreLabelTracker;
 
     private Stage screenStage;
@@ -102,14 +101,16 @@ public class MainGameScreen extends GameScreen {
         //Texture Variables
         spriteBatch = new SpriteBatch();
         background = new Texture("mouth.png");
-        spongeTexture = new Texture("badlogic.jpg");
-        sponge = new Rectangle();
-        sponge.height = spongeTexture.getHeight() * SPONGE_TEXTURE_SCALE;
-        sponge.width = spongeTexture.getWidth() * SPONGE_TEXTURE_SCALE;
-        sponge.x = screenCenterX - sponge.width/2;
-        sponge.y = screenCenterY - sponge.height/2;
-        planktons = new Array<Rectangle>();
-        planktonTextures = new Array<Texture>();
+
+        //Game Entity constructor
+            // Texture spr
+            // String cls,
+            // float scale,
+            // int screenWidth,
+            // int screenHeight,
+            // float move
+        sponge = new GameEntity(new Texture("badlogic.jpg"), "player", SPONGE_TEXTURE_SCALE, screenWidth, screenHeight, SPONGE_MOVE_SPEED);
+        planktons = new Array<GameEntity>();
 
         //UI Variables
         screenStage = new Stage();
@@ -161,7 +162,6 @@ public class MainGameScreen extends GameScreen {
                     gameMessage = "Starting in "+ ((-secondsElapsed)-1) + "!";
                 } else if(secondsElapsed == -1){
                     gameMessage = "Go!!!";
-                    spawnWave();
                 } else {
                     if(secondsElapsed == 0){
                         float currX = TITLE_LABEL_OFFSET_X * screenWidth;
@@ -169,6 +169,7 @@ public class MainGameScreen extends GameScreen {
                         scoreLabel.setX(currX + titleLabel.getWidth() + TITLE_LABEL_OFFSET_X * screenWidth);
                         scoreLabelTracker = scoreLabel;
                         screenStage.addActor(scoreLabelTracker);
+                        spawnWave();
                     }
                     int minutes = secondsElapsed/60;
                     int seconds = secondsElapsed%60;
@@ -216,9 +217,9 @@ public class MainGameScreen extends GameScreen {
         spriteBatch.begin();
         spriteBatch.draw(background, 0, 0,screenWidth, screenHeight);
         int ctr = 0;
-        Iterator<Rectangle> iter = planktons.iterator();
+        Iterator<GameEntity> iter = planktons.iterator();
         while(iter.hasNext()) {
-            Rectangle plankton = iter.next();
+            GameEntity plankton = iter.next();
             plankton.x += MathUtils.random(-1.0f,1.0f) * PLANKTON_MOVE_SPEED * screenWidth *delta;
             plankton.y += MathUtils.random(-1.0f,1.0f) * PLANKTON_MOVE_SPEED * screenHeight *delta;
             if(plankton.x < 0) plankton.x = 0;
@@ -227,19 +228,18 @@ public class MainGameScreen extends GameScreen {
             if(plankton.y > screenHeight - plankton.height) plankton.y = screenHeight - plankton.height;
 
             if(plankton.overlaps(sponge)){
-                planktonTextures.get(ctr).dispose();
-                planktonTextures.removeIndex(ctr);
+                plankton.getSprite().dispose();
                 iter.remove();
                 score += 1;
                 if(scoreLabelTracker != null){
                     scoreLabelTracker.setText("Score: "+score);
                 }
             } else {
-                spriteBatch.draw(planktonTextures.get(ctr), plankton.x, plankton.y, plankton.width, plankton.height);
+                spriteBatch.draw(plankton.getSprite(), plankton.x, plankton.y, plankton.width, plankton.height);
                 ctr = ctr + 1;
             }
         }
-        spriteBatch.draw(spongeTexture, sponge.x, sponge.y, sponge.width, sponge.height);
+        spriteBatch.draw(sponge.getSprite(), sponge.x, sponge.y, sponge.width, sponge.height);
         spriteBatch.end();
 
         screenStage.act(delta);
@@ -248,16 +248,8 @@ public class MainGameScreen extends GameScreen {
         if(Gdx.input.isTouched()) {
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-            float deltaX = (touchPos.x - (sponge.x + sponge.width/2))*delta;
-            float deltaY = ((screenHeight - touchPos.y) - (sponge.y + sponge.height/2))*delta;
-            sponge.x += deltaX;
-            sponge.y += deltaY;
+            sponge.setPosTo((int) touchPos.x, (int) touchPos.y);
         }
-
-        if(sponge.x < 0) sponge.x = 0;
-        if(sponge.x > screenWidth - sponge.width) sponge.x = screenWidth - sponge.width;
-        if(sponge.y < 0) sponge.y = 0;
-        if(sponge.y > screenHeight - sponge.height) sponge.y = screenHeight - sponge.height;
 
         if(planktons.size == 0 && secondsElapsed > FINAL_WAVE_TIME){
             endGame();
@@ -277,14 +269,25 @@ public class MainGameScreen extends GameScreen {
 
     private void spawnPlankton() {
         if(allowedToSpawn > 0){
-            Rectangle plankton = new Rectangle();
-            plankton.x = MathUtils.random(0, screenWidth - PLANKTON_INIT_OFFSET_X*screenWidth);
-            plankton.y = MathUtils.random(0, screenHeight - PLANKTON_INIT_OFFSET_Y*screenHeight);
+            GameEntity plankton = new GameEntity();
+            float x = MathUtils.random(0, screenWidth - PLANKTON_INIT_OFFSET_X*screenWidth);
+            float y = MathUtils.random(0, screenHeight - PLANKTON_INIT_OFFSET_Y*screenHeight);
+
             Texture planktonTexture = new Texture(PLANKTON_PATH+MathUtils.random(1, NUM_PLANKTONS_TO_LOAD)+".png");
-            plankton.width = planktonTexture.getWidth() * PLANKTON_TEXTURE_SCALE;
-            plankton.height = planktonTexture.getHeight() * PLANKTON_TEXTURE_SCALE;
+            float width = planktonTexture.getWidth() * PLANKTON_TEXTURE_SCALE;
+            float height = planktonTexture.getHeight() * PLANKTON_TEXTURE_SCALE;
+
+            plankton.setSprite(planktonTexture);
+            plankton.setClass("enemy");
+            plankton.setX((int) x);
+            plankton.setY((int) y);
+            plankton.setWidth(width);
+            plankton.setHeight(height);
+            plankton.setSpriteScale(PLANKTON_TEXTURE_SCALE);
+            plankton.setScreenBounds((int) screenWidth, (int) screenHeight);
+            plankton.setMoveSpeed(PLANKTON_MOVE_SPEED);
+
             planktons.add(plankton);
-            planktonTextures.add(planktonTexture);
             allowedToSpawn -= 1;
         }
     }
@@ -319,9 +322,9 @@ public class MainGameScreen extends GameScreen {
         screenSkin.dispose();
         spriteBatch.dispose();
         background.dispose();
-        spongeTexture.dispose();
-        for(Texture t : planktonTextures ){
-            t.dispose();
+        sponge.getSprite().dispose();
+        for(GameEntity t : planktons ){
+            t.getSprite().dispose();
         }
     }
 }
