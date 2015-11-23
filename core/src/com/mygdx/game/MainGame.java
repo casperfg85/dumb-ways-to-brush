@@ -30,6 +30,8 @@ public class MainGame extends Game {
     private EndGameScreen endGameScreen;
 
     private int lastGameScore = 0;
+	private int weaponColor = 1;
+	private boolean isTouched = true;
 
 	private HashMap<Integer,GameScreen> screenHashMap = new HashMap<Integer, GameScreen>();
 
@@ -110,6 +112,19 @@ public class MainGame extends Game {
 		}, duration);
 	}
 
+	public boolean getIsTouched(){
+		return isTouched;
+	}
+	public int getWeaponColor(){
+		return weaponColor;
+	}
+
+	public void setWeaponColor(int i){
+		weaponColor = i;
+	}
+	public void setIsTouched(boolean b){
+		isTouched = b;
+	}
 	public void exit(){
 		Gdx.app.exit();
 	}

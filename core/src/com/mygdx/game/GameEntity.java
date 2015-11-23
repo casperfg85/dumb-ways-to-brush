@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 
@@ -8,9 +9,14 @@ import com.badlogic.gdx.math.Rectangle;
 /**
  * Created by bryancasperchan on 23/11/2015.
  */
-public class GameEntity extends Rectangle{
-    private Texture sprite;
-    private String  entityClass;
+public class GameEntity extends Sprite{
+
+    public static final int PLAYER = 0;
+    public static final int RED = 1;
+    public static final int GREEN = 2;
+    public static final int BLUE = 3;
+
+    private int  entityClass;
     private float spriteScale = 1.0f;
     private int screenBoundWidth;
     private int screenBoundHeight;
@@ -20,36 +26,35 @@ public class GameEntity extends Rectangle{
 
     }
 
-    public GameEntity(Texture spr, String cls, float scale, float screenWidth, float screenHeight, float move){
+    public GameEntity(Texture spr){
+        super(spr);
+    }
+
+    public GameEntity(Texture spr, int cls, float scale, float screenWidth, float screenHeight, float move){
+        super(spr);
         this.entityClass = cls;
-        this.sprite = spr;
         this.spriteScale = scale;
-        this.width = (int) (this.sprite.getWidth() * this.spriteScale);
-        this.height = (int) (this.sprite.getWidth() * this.spriteScale);
+
         this.screenBoundHeight = (int) screenHeight;
         this.screenBoundWidth = (int) screenWidth;
-        this.x = this.screenBoundHeight/2 - width/2;
-        this.y = this.screenBoundHeight/2 - height/2;
+        computePosAndSize();
         this.moveSpeed = move;
     }
 
-    public void setClass(String s){
-        entityClass = s;
+    public int getEntityClass(){
+        return entityClass;
+    }
+    public void setEntityClass(int cls){
+        entityClass = cls;
     }
 
     public void computePosAndSize(){
-        this.width = (int) (this.sprite.getWidth() * this.spriteScale);
-        this.height = (int) (this.sprite.getWidth() * this.spriteScale);
-        this.x = this.screenBoundHeight/2 - this.width/2;
-        this.y = this.screenBoundHeight/2 - this.height/2;
+        float width = (int) (getWidth() * this.spriteScale);
+        float height = (int) (getWidth() * this.spriteScale);
+        float x = this.screenBoundHeight/2 - width/2;
+        float y = this.screenBoundHeight/2 - height/2;
+        setBounds(x,y,width,height);
     }
-    public Texture getSprite(){
-        return sprite;
-    }
-    public void setSprite(Texture t){
-        sprite = t;
-    }
-
 
     public void setSpriteScale(float f){
         spriteScale = f;
@@ -66,30 +71,42 @@ public class GameEntity extends Rectangle{
     }
 
     public void enforceBounds(){
+        float x = getX();
+        float y = getY();
+        float width = getWidth();
+        float height = getHeight();
         if(x < 0) x = 0;
         if(x > screenBoundWidth - width) x = screenBoundWidth - width;
         if(y < 0) y = 0;
         if(y > screenBoundHeight - height) y = screenBoundHeight - height;
+        setX(x);
+        setY(y);
     }
 
 
     public void randomMove(float delta) {
-        x += MathUtils.random(-1.0f, 1.0f) * moveSpeed * screenBoundWidth * delta;
-        y += MathUtils.random(-1.0f,1.0f) * moveSpeed * screenBoundHeight * delta;
+        float x = getX() + MathUtils.random(-1.0f, 1.0f) * moveSpeed * screenBoundWidth * delta;
+        float y = getY() + MathUtils.random(-1.0f,1.0f) * moveSpeed * screenBoundHeight * delta;
+        setX(x);
+        setY(y);
         enforceBounds();
     }
 
     public void moveToPos(int targetX, int targetY , float delta) {
-        float deltaX = (targetX - (x + width/2))*delta;
-        float deltaY = ((screenBoundHeight - targetY) - (y + height/2)) * delta;
-        x += deltaX;
-        y += deltaY;
+        float deltaX = (targetX - (getX() + getWidth()/2))*delta;
+        float deltaY = ((screenBoundHeight - targetY) - (getY() + getHeight()/2)) * delta;
+        float x = getX() + deltaX;
+        float y = getY() + deltaY;
+        setX(x);
+        setY(y);
         enforceBounds();
     }
 
     public void setPosTo(int targetX, int targetY){
-        x = targetX - (width/2);
-        y = (screenBoundHeight - targetY - (height/2));
+        float x = targetX - (getWidth()/2);
+        float y = (screenBoundHeight - targetY - (getHeight()/2));
+        setX(x);
+        setY(y);
         enforceBounds();
     }
 }
