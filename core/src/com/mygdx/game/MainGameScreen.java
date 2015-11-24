@@ -47,7 +47,7 @@ public class MainGameScreen extends GameScreen {
     private static final float SPONGE_TEXTURE_SCALE = 0.5f;
     private static final float SPONGE_MOVE_SPEED = 0.05f;
 
-    private static final float PLANKTON_TEXTURE_SCALE = 0.8f;
+    private static final float PLANKTON_TEXTURE_SCALE = 1.0f;
     private static final float PLANKTON_MOVE_SPEED = 0.5f;
     private static final int NUM_PLANKTONS_TO_LOAD = 8;
     private static final int NUM_COLORS = 3;
@@ -60,9 +60,9 @@ public class MainGameScreen extends GameScreen {
 
     private static final float WAVE_CHANCE = 0.8f;
     private static final int WAVE_INTERVAL = 10;
-    private static final int WAVE_COUNT_MIN = 5;
-    private static final int WAVE_COUNT_MAX = 8;
-    private static final int MAX_PER_COLOR = 30;
+    private static final int WAVE_COUNT_MIN = 8;
+    private static final int WAVE_COUNT_MAX = 12;
+    private static final int MAX_PER_COLOR = 20;
 
     private static final float RANDOM_SPAWN_CHANCE = 0.8f;
     private static final int RANDOM_SPAWN_INTERVAL = 3;
@@ -285,8 +285,10 @@ public class MainGameScreen extends GameScreen {
             }
         },0.0f,1.0f);
     }
-
     public void endGame(){
+        endGame("Game Over!");
+    }
+    public void endGame(String s){
         if(gameOver){
             return;
         }
@@ -294,6 +296,7 @@ public class MainGameScreen extends GameScreen {
         game.setLastGameScore(score);
         game.setLastGameTime(secondsElapsed);
         gameOver = true;
+        endGameLabelTracker.setText(s);
         screenStage.addActor(endGameLabelTracker);
 
         Timer.Task switchTask = new Timer.Task() {
@@ -408,11 +411,11 @@ public class MainGameScreen extends GameScreen {
         }
         if(!gameOver){
             if(planktons.size == 0 && secondsElapsed > END_GAME_TIME){
-                endGame();
+                endGame("Congratulations! Your mouth is safe ... for now.");
             }
             for(int i = 1;i <= NUM_COLORS;i++){
                 if(colorCounter.get(i) > MAX_PER_COLOR){
-                    endGame();
+                    endGame("Awww! The bacteria infected your mouth!");
                 }
             }
         }
