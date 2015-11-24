@@ -71,7 +71,7 @@ public class OptionsScreen extends GameScreen {
 
         Label.LabelStyle labelStyle = new Label.LabelStyle();
         labelStyle.font = screenSkin.getFont("default");
-        labelStyle.background = screenSkin.newDrawable("white", GameColor.FLAT_BLUE_DARK);
+        //labelStyle.background = screenSkin.newDrawable("white", GameColor.FLAT_BLUE_DARK);
         screenSkin.add("default", labelStyle);
 
         // Configure a TextButtonStyle and name it "default". Skin resources are stored by type, so this doesn't overwrite the font.

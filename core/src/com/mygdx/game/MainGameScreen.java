@@ -68,7 +68,8 @@ public class MainGameScreen extends GameScreen {
     private static final int RANDOM_SPAWN_INTERVAL = 3;
     private static final int TOTAL_TO_SPAWN  = 100;
 
-    private static final int FINAL_WAVE_TIME = 30;
+    private static final int FINAL_WAVE_TIME = 110;
+    private static final int END_GAME_TIME = 120;
 
     private MainGame game;
 
@@ -80,6 +81,7 @@ public class MainGameScreen extends GameScreen {
     private Label redLabelTracker;
     private Label greenLabelTracker;
     private Label blueLabelTracker;
+    private Label endGameLabelTracker;
 
     private Stage screenStage;
     private Skin screenSkin;
@@ -91,8 +93,10 @@ public class MainGameScreen extends GameScreen {
     private int numWaves = 0;
     private int allowedToSpawn = TOTAL_TO_SPAWN;
     private int score = 0;
+    private boolean gameOver = false;
     private HashMap<Integer, Integer> colorCounter;
     private Sprite[] weaponSelectorSprite;
+
 
 
     public MainGameScreen(MainGame g){
@@ -113,6 +117,7 @@ public class MainGameScreen extends GameScreen {
         numWaves = 0;
         allowedToSpawn = TOTAL_TO_SPAWN;
         score = 0;
+        gameOver = false;
         colorCounter = new HashMap<Integer, Integer>();
         colorCounter.put(GameEntity.RED, 0);
         colorCounter.put(GameEntity.GREEN, 0);
@@ -174,7 +179,7 @@ public class MainGameScreen extends GameScreen {
         titleLabel.setY(currY);
         screenStage.addActor(titleLabel);
 
-        final Label scoreLabel = new Label("Score: "+score,screenSkin);
+        final Label scoreLabel = new Label("Kills: "+score,screenSkin);
         scoreLabel.setAlignment(2);
         scoreLabel.setWidth(TITLE_LABEL_WIDTH * screenWidth);
         scoreLabel.setHeight(TITLE_LABEL_HEIGHT * screenHeight);
@@ -206,6 +211,15 @@ public class MainGameScreen extends GameScreen {
         greenLabel.setX(titleLabelOffsetX);
         greenLabel.setY(currY);
 
+        currY -= (titleLabel.getHeight() + TITLE_LABEL_OFFSET_Y);
+        final Label gameOverLabel = new Label("Game Over",screenSkin);
+        gameOverLabel.setAlignment(2);
+        gameOverLabel.setWidth(TITLE_LABEL_WIDTH * screenWidth);
+        gameOverLabel.setHeight(TITLE_LABEL_HEIGHT * screenHeight);
+        gameOverLabel.setFontScale(TITLE_LABEL_TEXT_SCALE);
+        gameOverLabel.setX(titleLabelOffsetX);
+        gameOverLabel.setY(currY);
+
         gameTimer.scheduleTask(new Timer.Task() {
             @Override
             public void run() {
@@ -231,6 +245,7 @@ public class MainGameScreen extends GameScreen {
                         redLabelTracker = redLabel;
                         greenLabelTracker = greenLabel;
                         blueLabelTracker = blueLabel;
+                        endGameLabelTracker = gameOverLabel;
 
                         screenStage.addActor(scoreLabelTracker);
                         screenStage.addActor(redLabelTracker);
@@ -272,8 +287,42 @@ public class MainGameScreen extends GameScreen {
     }
 
     public void endGame(){
+        if(gameOver){
+            return;
+        }
+        gameTimer.stop();
         game.setLastGameScore(score);
-        game.setGameScreen(MainGame.endGameScreenID, MainGame.mainGameScreenID);
+        game.setLastGameTime(secondsElapsed);
+        gameOver = true;
+        screenStage.addActor(endGameLabelTracker);
+
+        Timer.Task switchTask = new Timer.Task() {
+            @Override
+            public void run() {
+                game.setGameScreen(MainGame.endGameScreenID,MainGame.mainGameScreenID);
+            }
+        };
+        Timer.Task countDownTask = new Timer.Task() {
+            @Override
+            public void run() {
+               int countDown;
+                try {
+                    countDown = Integer.parseInt(endGameLabelTracker.getText().toString().replace("Cleaning up in... ",""));
+                    countDown = countDown - 1;
+                    if(countDown >= 0){
+                        endGameLabelTracker.setText("Cleaning up in... "+countDown);
+                    } else {
+                        game.setGameScreen(MainGame.endGameScreenID,MainGame.mainGameScreenID);
+                    }
+
+                } catch (Exception e){
+                    endGameLabelTracker.setText("Cleaning up in... 3");
+                }
+
+            }
+        };
+
+        Timer.schedule(countDownTask,1.0f,1.0f,4);
     }
 
     @Override
@@ -290,31 +339,35 @@ public class MainGameScreen extends GameScreen {
         Iterator<GameEntity> iter = planktons.iterator();
         while(iter.hasNext()) {
             GameEntity plankton = iter.next();
-            plankton.randomMove(delta);
-
-            if(game.getIsTouched() && plankton.getEntityClass() == game.getWeaponColor()){
-                plankton.setAlpha(Math.max(plankton.getColor().a - PLANKTON_DECAY, 0));
-            } else {
-                plankton.setAlpha(Math.min(plankton.getColor().a + PLANKTON_DECAY, 1));
-            }
-            if(plankton.getColor().a <= 0){
-                int currColorCount = colorCounter.get(plankton.getEntityClass());
-                colorCounter.put(plankton.getEntityClass(), currColorCount-1);
-                if(plankton.getEntityClass() == GameEntity.RED){
-                    redLabelTracker.setText("Red: "+colorCounter.get(plankton.getEntityClass()));
-                } else if(plankton.getEntityClass() == GameEntity.GREEN) {
-                    greenLabelTracker.setText("Green: "+colorCounter.get(plankton.getEntityClass()));
-                } else if(plankton.getEntityClass() == GameEntity.BLUE){
-                    blueLabelTracker.setText("Blue: "+colorCounter.get(plankton.getEntityClass()));
+            if(!gameOver){
+                plankton.randomMove(delta);
+                if(game.getIsTouched() && plankton.getEntityClass() == game.getWeaponColor()){
+                    plankton.setAlpha(Math.max(plankton.getColor().a - PLANKTON_DECAY, 0));
+                } else {
+                    plankton.setAlpha(Math.min(plankton.getColor().a + PLANKTON_DECAY, 1));
                 }
+                if(plankton.getColor().a <= 0){
+                    int currColorCount = colorCounter.get(plankton.getEntityClass());
+                    colorCounter.put(plankton.getEntityClass(), currColorCount-1);
+                    if(plankton.getEntityClass() == GameEntity.RED){
+                        redLabelTracker.setText("Red: "+colorCounter.get(plankton.getEntityClass()));
+                    } else if(plankton.getEntityClass() == GameEntity.GREEN) {
+                        greenLabelTracker.setText("Green: "+colorCounter.get(plankton.getEntityClass()));
+                    } else if(plankton.getEntityClass() == GameEntity.BLUE){
+                        blueLabelTracker.setText("Blue: "+colorCounter.get(plankton.getEntityClass()));
+                    }
 
-                plankton.getTexture().dispose();
-                iter.remove();
-                score += 1;
-                if(scoreLabelTracker != null){
-                    scoreLabelTracker.setText("Score: "+score);
+                    plankton.getTexture().dispose();
+                    iter.remove();
+                    score += 1;
+                    if(scoreLabelTracker != null){
+                        scoreLabelTracker.setText("Kills: "+score);
+                    }
                 }
             }
+
+
+
             /*
             if(plankton.overlaps(sponge)){
                 plankton.getSprite().dispose();
@@ -337,8 +390,7 @@ public class MainGameScreen extends GameScreen {
 
         screenStage.act(delta);
         screenStage.draw();
-
-        if(Math.abs(Gdx.input.getDeltaX()) > 10.0f){
+        if(Math.abs(Gdx.input.getDeltaX())+Math.abs(Gdx.input.getDeltaY()) > 100.0f){
             int weapColor = (game.getWeaponColor()%NUM_COLORS + 1) ;
             game.setWeaponColor(weapColor);
         }
@@ -351,18 +403,20 @@ public class MainGameScreen extends GameScreen {
             sponge.setScale(0.5f);
             game.setIsTouched(true);
         } else {
-            sponge.setScale(0.75f);
+            sponge.setScale(0.6f);
             game.setIsTouched(false);
         }
-
-        if(planktons.size == 0 && secondsElapsed > FINAL_WAVE_TIME){
-            endGame();
-        }
-        for(int i = 1;i < NUM_COLORS;i++){
-            if(colorCounter.get(i) > MAX_PER_COLOR){
+        if(!gameOver){
+            if(planktons.size == 0 && secondsElapsed > END_GAME_TIME){
                 endGame();
             }
+            for(int i = 1;i <= NUM_COLORS;i++){
+                if(colorCounter.get(i) > MAX_PER_COLOR){
+                    endGame();
+                }
+            }
         }
+
 
 
     }
@@ -378,7 +432,6 @@ public class MainGameScreen extends GameScreen {
     }
 
     private void spawnPlankton() {
-        if(allowedToSpawn > 0){
 
             float x = MathUtils.random(0, screenWidth - PLANKTON_INIT_OFFSET_X*screenWidth);
             float y = MathUtils.random(0, screenHeight - PLANKTON_INIT_OFFSET_Y*screenHeight);
@@ -416,7 +469,6 @@ public class MainGameScreen extends GameScreen {
 
             planktons.add(plankton);
             allowedToSpawn -= 1;
-        }
     }
 
     @Override
