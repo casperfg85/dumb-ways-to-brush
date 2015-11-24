@@ -30,6 +30,9 @@ public class MainGame extends Game {
     private EndGameScreen endGameScreen;
 
     private int lastGameScore = 0;
+    private int lastGameTime = 0;
+	private int weaponColor = 1;
+	private boolean isTouched = true;
 
 	private HashMap<Integer,GameScreen> screenHashMap = new HashMap<Integer, GameScreen>();
 
@@ -47,11 +50,15 @@ public class MainGame extends Game {
 		screenHashMap.put(optionsScreenID, optionsScreen);
         screenHashMap.put(endGameScreenID, endGameScreen);
 
+        //lastGameScore = 30;
+        //lastGameTime = 120;
+        //setGameScreen(endGameScreenID, nullScreenID);
 		start();
 	}
 
 	public void start() {
-		setGameScreen(splashScreenID, nullScreenID);
+
+        setGameScreen(splashScreenID, nullScreenID);
 		Timer.schedule(new Timer.Task() {
 			@Override
 			public void run() {
@@ -70,6 +77,7 @@ public class MainGame extends Game {
 
     public void resetGameData(){
         lastGameScore = -1;
+        lastGameTime = -1;
     }
 
     public int getLastGameScore() {
@@ -79,6 +87,14 @@ public class MainGame extends Game {
     public void setLastGameScore(int score){
         lastGameScore = score;
     }
+    public int getLastGameTime() {
+        return lastGameTime;
+    }
+
+    public void setLastGameTime(int time){
+        lastGameTime = time;
+    }
+
 
 	public void setGameScreen(int gameScreenIDToShow, int gameScreenIDToDispose){
 		if(screenHashMap.containsKey(gameScreenIDToShow)){
@@ -110,6 +126,19 @@ public class MainGame extends Game {
 		}, duration);
 	}
 
+	public boolean getIsTouched(){
+		return isTouched;
+	}
+	public int getWeaponColor(){
+		return weaponColor;
+	}
+
+	public void setWeaponColor(int i){
+		weaponColor = i;
+	}
+	public void setIsTouched(boolean b){
+		isTouched = b;
+	}
 	public void exit(){
 		Gdx.app.exit();
 	}
