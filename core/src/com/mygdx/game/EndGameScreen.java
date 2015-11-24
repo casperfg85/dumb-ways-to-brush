@@ -21,24 +21,20 @@ public class EndGameScreen extends GameScreen {
     private float screenCenterX = screenWidth/2;
     private float screenCenterY = screenHeight/2;
 
+    private static final String MERMAID_FONT_PATH = "fonts/Mermaid1001.ttf";
+    private static final int MERMAID_FONT_SIZE = 72;
 
     private static final float BACK_BUTTON_WIDTH = 0.35f;
     private static final float BACK_BUTTON_HEIGHT = 0.1f;
     private static final float BACK_BUTTON_OFFSET_Y = 0.05f;
     private static final float BACK_BUTTON_OFFSET_X = 0.05f;
-    private static final float BACK_BUTTON_TEXT_SCALE = 3.0f;
-
-    private static final float MENU_BUTTON_WIDTH = 0.35f;
-    private static final float MENU_BUTTON_HEIGHT = 0.15f;
-    private static final float MENU_BUTTON_OFFSET_Y = 0.05f;
-    private static final float MENU_BUTTON_OFFSET_X = 0.2f;
-    private static final float MENU_BUTTON_TEXT_SCALE = 3.0f;
+    private static final float BACK_BUTTON_TEXT_SCALE = 0.75f;
 
     private static final float TITLE_LABEL_WIDTH = 0.75f;
     private static final float TITLE_LABEL_HEIGHT = 0.1f;
     private static final float TITLE_LABEL_OFFSET_Y = 0.05f;
     private static final float TITLE_LABEL_OFFSET_X = 0.2f;
-    private static final float TITLE_LABEL_TEXT_SCALE = 4.0f;
+    private static final float TITLE_LABEL_TEXT_SCALE = 1.0f;
 
     private static final float INITIAL_OFFSET_Y = 0.05f;
 
@@ -67,20 +63,20 @@ public class EndGameScreen extends GameScreen {
         screenSkin.add("white", new Texture(pixmap));
 
         // Store the default libgdx font under the name "default".
-        BitmapFont bFont = new BitmapFont();
-        screenSkin.add("default",bFont);
+        BitmapFont bFont = GameAssets.generateFont(MERMAID_FONT_PATH, MERMAID_FONT_SIZE);
+        screenSkin.add("default", bFont);
 
         Label.LabelStyle labelStyle = new Label.LabelStyle();
         labelStyle.font = screenSkin.getFont("default");
-        //labelStyle.background = screenSkin.newDrawable("white", GameColor.FLAT_BLUE_DARK);
+        //labelStyle.background = screenSkin.newDrawable("white", GameAssets.FLAT_BLUE_DARK);
         screenSkin.add("default", labelStyle);
 
         // Configure a TextButtonStyle and name it "default". Skin resources are stored by type, so this doesn't overwrite the font.
         TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
-        textButtonStyle.up = screenSkin.newDrawable("white", GameColor.FLAT_BLUE_DARK);
-        textButtonStyle.down = screenSkin.newDrawable("white", GameColor.FLAT_BLUE_DARK);
-        textButtonStyle.checked = screenSkin.newDrawable("white", GameColor.FLAT_BLUE_DARK);
-        textButtonStyle.over = screenSkin.newDrawable("white", GameColor.FLAT_BLUE_DARK);
+        textButtonStyle.up = screenSkin.newDrawable("white", GameAssets.FLAT_BLUE_DARK);
+        textButtonStyle.down = screenSkin.newDrawable("white", GameAssets.FLAT_BLUE_DARK);
+        textButtonStyle.checked = screenSkin.newDrawable("white", GameAssets.FLAT_BLUE_DARK);
+        textButtonStyle.over = screenSkin.newDrawable("white", GameAssets.FLAT_BLUE_DARK);
         textButtonStyle.font = screenSkin.getFont("default");
         screenSkin.add("default", textButtonStyle);
 
@@ -199,7 +195,7 @@ public class EndGameScreen extends GameScreen {
 
     @Override
     public void render(float delta) {
-        Color flatWhite = GameColor.FLAT_PURPLE;
+        Color flatWhite = GameAssets.FLAT_ORANGE;
         Gdx.gl.glClearColor(flatWhite.r, flatWhite.g, flatWhite.b, screenAlpha);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         screenStage.act(delta);

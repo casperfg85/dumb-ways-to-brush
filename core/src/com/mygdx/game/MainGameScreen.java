@@ -38,7 +38,7 @@ public class MainGameScreen extends GameScreen {
     private static final float TITLE_LABEL_OFFSET_Y = 0.15f;
     private static final float TITLE_LABEL_OFFSET_X = 0.05f;
     private static final float LABEL_TRACKER_OFFSET = 0.025f;
-    private static final float TITLE_LABEL_TEXT_SCALE = 4.0f;
+    private static final float TITLE_LABEL_TEXT_SCALE = 1.0f;
 
     private static final float PLANKTON_INIT_OFFSET_X = 0.1f;
     private static final float PLANKTON_INIT_OFFSET_Y = 0.1f;
@@ -57,6 +57,8 @@ public class MainGameScreen extends GameScreen {
     private static final String BLUE_PLANKTON_PATH = "planktons-blue/plankton-";
     private static final float PLANKTON_DECAY = 0.01f;
 
+    private static final String MERMAID_FONT_PATH = "fonts/Mermaid1001.ttf";
+    private static final int MERMAID_FONT_SIZE = 48;
 
     private static final float WAVE_CHANCE = 0.8f;
     private static final int WAVE_INTERVAL = 10;
@@ -158,11 +160,12 @@ public class MainGameScreen extends GameScreen {
         screenSkin.add("white", new Texture(pixmap));
 
         // Store the default libgdx font under the name "default".
-        BitmapFont bFont = new BitmapFont();
+        BitmapFont bFont = GameAssets.generateFont(MERMAID_FONT_PATH, MERMAID_FONT_SIZE);
         screenSkin.add("default", bFont);
 
+
         Label.LabelStyle labelStyle = new Label.LabelStyle();
-        //labelStyle.background = screenSkin.newDrawable("white", GameColor.FLAT_BLUE);
+        //labelStyle.background = screenSkin.newDrawable("white", GameAssets.FLAT_BLUE);
         labelStyle.font = screenSkin.getFont("default");
         labelStyle.font.setUseIntegerPositions(true);
         screenSkin.add("default", labelStyle);
@@ -325,7 +328,7 @@ public class MainGameScreen extends GameScreen {
             }
         };
 
-        Timer.schedule(countDownTask,1.0f,1.0f,4);
+        Timer.schedule(countDownTask,1.5f,1.0f,4);
     }
 
     @Override
